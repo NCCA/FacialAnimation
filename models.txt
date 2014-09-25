@@ -1,0 +1,16 @@
+BaseMesh,models/FaceDefault.obj
+# comma seperated data BlendShape Text  path
+BlendShape,Cheek Puff,models/FaceCheekPuff.obj
+BlendShape,Cheek Suck,models/FaceCheekSuck.obj
+BlendShape,Jaw Open,models/FaceJawOpen.obj
+BlendShape,Kiss,models/FaceKiss.obj
+BlendShape,Left Brow Down,models/FaceLeftBrowDown.obj
+BlendShape,Left Brow Up,models/FaceLeftBrowUp.obj
+BlendShape,Left Frown,models/FaceLeftFrown.obj
+BlendShape,Left Smile,models/FaceLeftSmile.obj
+BlendShape,Left Sneer,models/FaceLeftSneer.obj
+BlendShape,Right Brow Down,models/FaceRightBrowDown.obj
+BlendShape,Right Brow Up,models/FaceRightBrowUp.obj
+BlendShape,Right Frown,models/FaceRightFrown.obj
+BlendShape,Right Smile,models/FaceRightSmile.obj
+BlendShape,Right Sneer,models/FaceRightSneer.obj
