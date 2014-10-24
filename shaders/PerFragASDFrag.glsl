@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 // this shader is modified from the OpenGL Shading Language cookbook
 
 struct LightInfo

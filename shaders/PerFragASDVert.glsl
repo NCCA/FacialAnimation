@@ -1,4 +1,4 @@
-#version 400 core
+#version 330 core
 // this is base on http://http.developer.nvidia.com/GPUGems3/gpugems3_ch03.html
 layout (location =0) in vec3 baseVert;
 layout (location =1) in vec3 baseNormal;
