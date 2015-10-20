@@ -77,8 +77,8 @@ void NGLScene::initializeGL()
   // we are creating a shader called PerFragADS
   shader->createShaderProgram("PerFragADS");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PerFragADSVertex",ngl::VERTEX);
-  shader->attachShader("PerFragADSFragment",ngl::FRAGMENT);
+  shader->attachShader("PerFragADSVertex",ngl::ShaderType::VERTEX);
+  shader->attachShader("PerFragADSFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
   shader->loadShaderSource("PerFragADSVertex","shaders/PerFragASDVert.glsl");
   shader->loadShaderSource("PerFragADSFragment","shaders/PerFragASDFrag.glsl");
