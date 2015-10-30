@@ -44,14 +44,13 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL
-  glViewport(0,0,_w,_h);
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45,(float)_w/_h,0.05,350);
-  update();
-}
+  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
+ }
 
 
 void NGLScene::initializeGL()
@@ -67,10 +66,10 @@ void NGLScene::initializeGL()
   ngl::Vec3 from(0,1.5,15);
   ngl::Vec3 to(0,1.5,0);
   ngl::Vec3 up(0,1,0);
-  m_cam= new ngl::Camera(from,to,up);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.05,350);
+  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -140,11 +139,11 @@ void NGLScene::initializeGL()
 
 
   // first we create a mesh from an obj passing in the obj file and texture
-  m_eyeMesh = new ngl::Obj("models/Eyeball.obj");
+  m_eyeMesh.reset(new ngl::Obj("models/Eyeball.obj"));
   m_eyeMesh->createVAO();
   parseModelFile();
 
-  m_text=new ngl::Text(QFont("Arial",16));
+  m_text.reset(new ngl::Text(QFont("Arial",16)));
   createMorphMesh();
   glViewport(0,0,1024,720);
   m_text->setScreenSize(width(),height());
@@ -236,7 +235,7 @@ void NGLScene::createMorphMesh()
   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, morphTarget);
 
   // first we grab an instance of our VOA class as a TRIANGLE_STRIP
-  m_vaoMesh= ngl::VertexArrayObject::createVOA(GL_TRIANGLES);
+  m_vaoMesh.reset( ngl::VertexArrayObject::createVOA(GL_TRIANGLES));
   // next we bind it so it's active for setting data
   m_vaoMesh->bind();
   unsigned int meshSize=vboMesh.size();
@@ -276,7 +275,7 @@ void NGLScene::changeActiveWeight(Direction _d)
   switch (_d)
   {
     case UP :
-      if(++m_activeWeight >= m_meshes.size() )
+      if(++m_activeWeight >= static_cast<int>(m_meshes.size()) )
         m_activeWeight=m_meshes.size()-1;
     break;
     case DOWN :
@@ -284,6 +283,7 @@ void NGLScene::changeActiveWeight(Direction _d)
         m_activeWeight=0;
     break;
   }
+  std::cout<<m_activeWeight<<"\n";
 }
 
 void NGLScene::changeWeight(Direction _d )
@@ -334,7 +334,7 @@ void NGLScene::parseModelFile()
       {
           ++firstWord;
           std::cout<<"found base mesh loading "<<*firstWord<<"\n";
-          m_baseMesh = new ngl::Obj(*firstWord);
+          m_baseMesh.reset( new ngl::Obj(*firstWord));
       }
       else if( *firstWord =="BlendShape")
       {
@@ -342,8 +342,8 @@ void NGLScene::parseModelFile()
           std::cout<<"Found "<<*firstWord<<"\n";
           m_meshNames.push_back(*firstWord);
           ++firstWord;
-          ngl::Obj *mesh= new ngl::Obj(*firstWord);
-          m_meshes.push_back(mesh);      }
+          std::unique_ptr<ngl::Obj> mesh( new ngl::Obj(*firstWord));
+          m_meshes.push_back(std::move(mesh));      }
     }// end zero loop
    }
 }
@@ -355,8 +355,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_mouseGlobalTX*m_cam->getViewMatrix();
-  MVP=MV*m_cam->getProjectionMatrix() ;
+  MV= m_mouseGlobalTX*m_cam.getViewMatrix();
+  MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setUniform("MVP",MVP);
@@ -408,8 +408,8 @@ void NGLScene::paintGL()
   t.setScale(0.685,0.583,0.583);
   t.setPosition(-1.276,3.209,2.271);
   M=t.getMatrix()*m_mouseGlobalTX;
-  MV= M*m_cam->getViewMatrix();
-  MVP=MV*m_cam->getProjectionMatrix() ;
+  MV= M*m_cam.getViewMatrix();
+  MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
 
@@ -419,8 +419,8 @@ void NGLScene::paintGL()
 
   t.setPosition(1.276,3.209,2.271);
   M=t.getMatrix()*m_mouseGlobalTX;
-  MV= M*m_cam->getViewMatrix();
-  MVP=MV*m_cam->getProjectionMatrix() ;
+  MV= M*m_cam.getViewMatrix();
+  MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setUniform("MVP",MVP);

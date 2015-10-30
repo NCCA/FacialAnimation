@@ -43,7 +43,7 @@ class NGLScene : public QOpenGLWindow
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we resize
     //----------------------------------------------------------------------------------------------------------------------
-    void resizeGL(int _w, int _h);
+    void resizeGL(QResizeEvent *_event);
 
     enum Direction{UP,DOWN};
     void changeWeight(Direction _d );
@@ -85,13 +85,21 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     int m_origYPos;
     //----------------------------------------------------------------------------------------------------------------------
+    /// @brief window width
+    //----------------------------------------------------------------------------------------------------------------------
+    int m_width;
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief window height
+    //----------------------------------------------------------------------------------------------------------------------
+    int m_height;
+    //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
     //----------------------------------------------------------------------------------------------------------------------
     ngl::Mat4 m_mouseGlobalTX;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Our Camera
     //----------------------------------------------------------------------------------------------------------------------
-    ngl::Camera *m_cam;
+    ngl::Camera m_cam;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief the model position for mouse movement
     //----------------------------------------------------------------------------------------------------------------------
@@ -100,21 +108,21 @@ private:
     /// @brief a simple light use to illuminate the screen
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief our model
-    std::vector<ngl::Obj *> m_meshes;
+    std::vector< std::unique_ptr<ngl::Obj>> m_meshes;
     /// @brief the base mesh
-    ngl::Obj *m_baseMesh;
+    std::unique_ptr<ngl::Obj> m_baseMesh;
     /// @brief eye mesh
-    ngl::Obj *m_eyeMesh;
+    std::unique_ptr<ngl::Obj> m_eyeMesh;
     /// @brief text for rendering
-    ngl::Text *m_text;
+    std::unique_ptr<ngl::Text> m_text;
     /// @brief the weights for the models
     std::vector <ngl::Real> m_weights;
     /// @brief text name of blend meshes
     std::vector <std::string> m_meshNames;
     /// @brief active weight
-    unsigned int m_activeWeight;
+    int m_activeWeight;
     /// @brief the mesh with all the data in it
-    ngl::VertexArrayObject *m_vaoMesh;
+    std::unique_ptr<ngl::VertexArrayObject> m_vaoMesh;
     /// @brief the id for the texture buffer object
     GLuint m_tboID;
     /// left eye rotation
