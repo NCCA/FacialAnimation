@@ -6,6 +6,7 @@
 #include <ngl/Text.h>
 #include <ngl/Obj.h>
 #include <QOpenGLWindow>
+#include <memory>
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -43,7 +44,10 @@ class NGLScene : public QOpenGLWindow
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we resize
     //----------------------------------------------------------------------------------------------------------------------
+    // Qt 5.5.1 must have this implemented and uses it
     void resizeGL(QResizeEvent *_event);
+    // Qt 5.x uses this instead! http://doc.qt.io/qt-5/qopenglwindow.html#resizeGL
+    void resizeGL(int _w, int _h);
 
     enum Direction{UP,DOWN};
     void changeWeight(Direction _d );
