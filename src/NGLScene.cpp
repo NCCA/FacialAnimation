@@ -93,13 +93,13 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setShaderParam3f("material.Ka",0.1,0.1,0.1);
+  shader->setUniform("material.Ka",0.1f,0.1f,0.1f);
   // red diffuse
-  shader->setShaderParam3f("material.Kd",0.8,0.8,0.8);
+  shader->setUniform("material.Kd",0.8f,0.8f,0.8f);
   // white spec
-  shader->setShaderParam3f("material.Ks",1.0,1.0,1.0);
-  shader->setShaderParam1f("material.shininess",800);
-  shader->setShaderParam1f("TBO",0);
+  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
+  shader->setUniform("material.shininess",800.0f);
+  shader->setUniform("TBO",0);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -113,17 +113,17 @@ void NGLScene::initializeGL()
   vec3 Ls;
   };*/
   shader->setUniform("light.position",from);
-  shader->setShaderParam3f("light.La",0.1,0.1,0.1);
-  shader->setShaderParam3f("light.Ld",1.0,1.0,1.0);
-  shader->setShaderParam3f("light.Ls",0.9,0.9,0.9);
+  shader->setUniform("light.La",0.1f,0.1f,0.1f);
+  shader->setUniform("light.Ld",1.0f,1.0f,1.0f);
+  shader->setUniform("light.Ls",0.9f,0.9f,0.9f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
   (*shader)["nglDiffuseShader"]->use();
-  shader->setShaderParam4f("Colour",1,1,1,1);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   shader->setUniform("lightPos",from);
-  shader->setShaderParam4f("lightDiffuse",1,1,1,1);
+  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
 
   // first we create a mesh from an obj passing in the obj file and texture
