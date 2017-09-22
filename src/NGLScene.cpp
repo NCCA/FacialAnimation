@@ -343,10 +343,10 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_mouseGlobalTX*m_cam.getViewMatrix();
-  MVP=MV*m_cam.getProjectionMatrix() ;
+  MV= m_cam.getViewMatrix()*m_mouseGlobalTX;
+  MVP=m_cam.getProjectionMatrix() *MV;
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("MV",MV);
   shader->setUniform("normalMatrix",normalMatrix);
@@ -395,20 +395,20 @@ void NGLScene::paintGL()
   ngl::Transformation t;
   t.setScale(0.685f,0.583f,0.583f);
   t.setPosition(-1.276f,3.209f,2.271f);
-  M=t.getMatrix()*m_mouseGlobalTX;
-  MV= M*m_cam.getViewMatrix();
-  MVP=MV*m_cam.getProjectionMatrix() ;
+  M=m_mouseGlobalTX*t.getMatrix();
+  MV= m_cam.getViewMatrix()*M;
+  MVP=m_cam.getProjectionMatrix()*MV ;
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
 
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
   m_eyeMesh->draw();
 
-  t.setPosition(1.276,3.209,2.271);
-  M=t.getMatrix()*m_mouseGlobalTX;
-  MV= M*m_cam.getViewMatrix();
-  MVP=MV*m_cam.getProjectionMatrix() ;
+  t.setPosition(1.276f,3.209f,2.271f);
+  M=m_mouseGlobalTX*t.getMatrix();
+  MV= m_cam.getViewMatrix()*M;
+  MVP=m_cam.getProjectionMatrix()*MV ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setUniform("MVP",MVP);
