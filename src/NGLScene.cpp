@@ -2,9 +2,6 @@
 #include <QGuiApplication>
 
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -36,7 +33,7 @@ NGLScene::~NGLScene()
 
 void NGLScene::resizeGL( int _w, int _h )
 {
-  m_cam.setShape( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
+  m_project=ngl::perspective( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
   m_win.width  = static_cast<int>( _w * devicePixelRatio() );
   m_win.height = static_cast<int>( _h * devicePixelRatio() );
 }
@@ -54,10 +51,10 @@ void NGLScene::initializeGL()
   ngl::Vec3 from(0,1.5,15);
   ngl::Vec3 to(0,1.5,0);
   ngl::Vec3 up(0,1,0);
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0/576.0,0.05,350);
+  m_project=ngl::perspective(45,(float)720.0/576.0,0.05,350);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -155,7 +152,7 @@ void NGLScene::createMorphMesh()
   std::vector <ngl::Vec3> baseNormal=m_baseMesh->getNormalList();
 
   // should really check to see if the poses match if we were doing this properly
-  int numMeshes = m_meshes.size();
+  auto numMeshes = m_meshes.size();
   std::cout<<"num meshes "<<numMeshes;
   std::vector <std::vector <ngl::Vec3> > verts;
   std::vector <std::vector <ngl::Vec3> > normals;
@@ -164,7 +161,7 @@ void NGLScene::createMorphMesh()
   // just break if it's not right so should know!
   std::vector <ngl::Face> faces=m_baseMesh->getFaceList();
 
-  for(int i=0; i<numMeshes; ++i)
+  for(size_t i=0; i<numMeshes; ++i)
   {
     verts.push_back(m_meshes[i]->getVertexList());
     normals.push_back(m_meshes[i]->getNormalList());
@@ -173,21 +170,21 @@ void NGLScene::createMorphMesh()
   // now we are going to process and pack the mesh into an ngl::VertexArrayObject
   std::vector <vertData> vboMesh;
   vertData d;
-  unsigned int nFaces=faces.size();
+  auto nFaces=faces.size();
   // loop for each of the faces
   ngl::Vec3 current;
 
-  for(unsigned int i=0;i<nFaces;++i)
+  for(size_t i=0;i<nFaces;++i)
   {
     // now for each triangle in the face (remember we ensured tri above)
-    for(int j=0;j<3;++j)
+    for(size_t j=0;j<3;++j)
     {
       // pack in the vertex data first
 
       d.p1=baseVert[faces[i].m_vert[j]];
       // the blend meshes are just the differences so we subtract the base mesh
       // from the current one (could do this on GPU but this saves processing time)
-      for(int vi=0; vi<numMeshes; ++vi)
+      for(size_t vi=0; vi<numMeshes; ++vi)
       {
         current=verts[vi][faces[i].m_vert[j]]-d.p1;
         targets.push_back(ngl::Vec4(current.m_x,current.m_y,current.m_z,1.0));
@@ -195,7 +192,7 @@ void NGLScene::createMorphMesh()
 
       // now do the normals
       d.n1=baseNormal[faces[i].m_norm[j]];
-      for(int ni=0; ni<numMeshes; ++ni)
+      for(size_t ni=0; ni<numMeshes; ++ni)
       {
         current=normals[ni][faces[i].m_norm[j]]-d.n1;
         targets.push_back(ngl::Vec4(current.m_x,current.m_y,current.m_z,1.0));
@@ -223,7 +220,7 @@ void NGLScene::createMorphMesh()
   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, morphTarget);
 
   // first we grab an instance of our VOA class as a TRIANGLE_STRIP
-  m_vaoMesh.reset( ngl::VAOFactory::createVAO("simpleVAO",GL_TRIANGLES));
+  m_vaoMesh= ngl::VAOFactory::createVAO("simpleVAO",GL_TRIANGLES);
   // next we bind it so it's active for setting data
   m_vaoMesh->bind();
   auto meshSize=vboMesh.size();
@@ -343,8 +340,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_cam.getViewMatrix()*m_mouseGlobalTX;
-  MVP=m_cam.getProjectionMatrix() *MV;
+  MV=m_view*m_mouseGlobalTX;
+  MVP=m_project *MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
@@ -396,8 +393,8 @@ void NGLScene::paintGL()
   t.setScale(0.685f,0.583f,0.583f);
   t.setPosition(-1.276f,3.209f,2.271f);
   M=m_mouseGlobalTX*t.getMatrix();
-  MV= m_cam.getViewMatrix()*M;
-  MVP=m_cam.getProjectionMatrix()*MV ;
+  MV= m_view*M;
+  MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
 
@@ -407,8 +404,8 @@ void NGLScene::paintGL()
 
   t.setPosition(1.276f,3.209f,2.271f);
   M=m_mouseGlobalTX*t.getMatrix();
-  MV= m_cam.getViewMatrix()*M;
-  MVP=m_cam.getProjectionMatrix()*MV ;
+  MV= m_view*M;
+  MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setUniform("MVP",MVP);

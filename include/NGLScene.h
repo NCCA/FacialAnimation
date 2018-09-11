@@ -1,12 +1,9 @@
 #ifndef NGLSCENE_H_
 #define NGLSCENE_H_
 #include <ngl/AbstractMesh.h>
-#include <ngl/Camera.h>
-#include <ngl/Colour.h>
-#include <ngl/Light.h>
 #include <ngl/Text.h>
 #include <ngl/Obj.h>
-
+#include <ngl/Mat4.h>
 #include "WindowParams.h"
 #include <QOpenGLWindow>
 #include <memory>
@@ -67,7 +64,8 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Our Camera
     //----------------------------------------------------------------------------------------------------------------------
-    ngl::Camera m_cam;
+    ngl::Mat4 m_view;
+    ngl::Mat4 m_project;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief the model position for mouse movement
     //----------------------------------------------------------------------------------------------------------------------
@@ -88,7 +86,7 @@ private:
     /// @brief text name of blend meshes
     std::vector <std::string> m_meshNames;
     /// @brief active weight
-    int m_activeWeight;
+    size_t m_activeWeight;
     /// @brief the mesh with all the data in it
     std::unique_ptr<ngl::AbstractVAO> m_vaoMesh;
     /// @brief the id for the texture buffer object
