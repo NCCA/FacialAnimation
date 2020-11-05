@@ -12,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 
-// create a typecast to tokenizer as it's quicker to wrie than the whole
+// create a typecast to tokenizer as it's quicker to write than the whole
 // line
 typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
@@ -40,7 +40,7 @@ void NGLScene::resizeGL( int _w, int _h )
 
 void NGLScene::initializeGL()
 {
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -55,28 +55,25 @@ void NGLScene::initializeGL()
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45,(float)720.0/576.0,0.05,350);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   // we are creating a shader called PerFragADS
-  shader->createShaderProgram("PerFragADS");
+  ngl::ShaderLib::createShaderProgram("PerFragADS");
   // now we are going to create empty shaders for Frag and Vert
-  shader->attachShader("PerFragADSVertex",ngl::ShaderType::VERTEX);
-  shader->attachShader("PerFragADSFragment",ngl::ShaderType::FRAGMENT);
+  ngl::ShaderLib::attachShader("PerFragADSVertex",ngl::ShaderType::VERTEX);
+  ngl::ShaderLib::attachShader("PerFragADSFragment",ngl::ShaderType::FRAGMENT);
   // attach the source
-  shader->loadShaderSource("PerFragADSVertex","shaders/PerFragASDVert.glsl");
-  shader->loadShaderSource("PerFragADSFragment","shaders/PerFragASDFrag.glsl");
+  ngl::ShaderLib::loadShaderSource("PerFragADSVertex","shaders/PerFragASDVert.glsl");
+  ngl::ShaderLib::loadShaderSource("PerFragADSFragment","shaders/PerFragASDFrag.glsl");
   // compile the shaders
-  shader->compileShader("PerFragADSVertex");
-  shader->compileShader("PerFragADSFragment");
+  ngl::ShaderLib::compileShader("PerFragADSVertex");
+  ngl::ShaderLib::compileShader("PerFragADSFragment");
   // add them to the program
-  shader->attachShaderToProgram("PerFragADS","PerFragADSVertex");
-  shader->attachShaderToProgram("PerFragADS","PerFragADSFragment");
+  ngl::ShaderLib::attachShaderToProgram("PerFragADS","PerFragADSVertex");
+  ngl::ShaderLib::attachShaderToProgram("PerFragADS","PerFragADSFragment");
 
   // now we have associated this data we can link the shader
-  shader->linkProgramObject("PerFragADS");
+  ngl::ShaderLib::linkProgramObject("PerFragADS");
   // and make it active ready to load values
-  (*shader)["PerFragADS"]->use();
+  ngl::ShaderLib::use("PerFragADS");
   // now we need to set the material and light values
   /*
    *struct MaterialInfo
@@ -90,13 +87,13 @@ void NGLScene::initializeGL()
         // Specular shininess factor
         float shininess;
   };*/
-  shader->setUniform("material.Ka",0.1f,0.1f,0.1f);
+  ngl::ShaderLib::setUniform("material.Ka",0.1f,0.1f,0.1f);
   // red diffuse
-  shader->setUniform("material.Kd",0.8f,0.8f,0.8f);
+  ngl::ShaderLib::setUniform("material.Kd",0.8f,0.8f,0.8f);
   // white spec
-  shader->setUniform("material.Ks",1.0f,1.0f,1.0f);
-  shader->setUniform("material.shininess",800.0f);
-  shader->setUniform("TBO",0);
+  ngl::ShaderLib::setUniform("material.Ks",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("material.shininess",800.0f);
+  ngl::ShaderLib::setUniform("TBO",0);
   // now for  the lights values (all set to white)
   /*struct LightInfo
   {
@@ -109,18 +106,18 @@ void NGLScene::initializeGL()
   // Specular light intensity
   vec3 Ls;
   };*/
-  shader->setUniform("light.position",from);
-  shader->setUniform("light.La",0.1f,0.1f,0.1f);
-  shader->setUniform("light.Ld",1.0f,1.0f,1.0f);
-  shader->setUniform("light.Ls",0.9f,0.9f,0.9f);
+  ngl::ShaderLib::setUniform("light.position",from);
+  ngl::ShaderLib::setUniform("light.La",0.1f,0.1f,0.1f);
+  ngl::ShaderLib::setUniform("light.Ld",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("light.Ls",0.9f,0.9f,0.9f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
-  (*shader)["nglDiffuseShader"]->use();
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglDiffuseShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
-  shader->setUniform("lightPos",from);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",from);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
 
   // first we create a mesh from an obj passing in the obj file and texture
@@ -128,7 +125,7 @@ void NGLScene::initializeGL()
   m_eyeMesh->createVAO();
   parseModelFile();
 
-  m_text.reset(new ngl::Text(QFont("Arial",16)));
+  m_text=std::make_unique<ngl::Text>("fonts/Arial.ttf",16);
   createMorphMesh();
   glViewport(0,0,1024,720);
   m_text->setScreenSize(width(),height());
@@ -335,8 +332,7 @@ void NGLScene::parseModelFile()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["PerFragADS"]->use();
+  ngl::ShaderLib::use("PerFragADS");
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -344,13 +340,12 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project *MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("MV",MV);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MV",MV);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
   for(unsigned int i=0; i<m_weights.size(); ++i)
   {
-    std::string name=boost::str(boost::format("weights[%d]") % i );
-    shader->setUniform(name,m_weights[i]);
+    ngl::ShaderLib::setUniform(fmt::format("weights[{}]",i),m_weights[i]);
   }
 
 
@@ -378,11 +373,10 @@ void NGLScene::paintGL()
   // draw the mesh
   m_vaoMesh->bind();
   glBindTexture(GL_TEXTURE_BUFFER, m_tboID);
- m_vaoMesh->draw();
+  m_vaoMesh->draw();
   m_vaoMesh->unbind();
 
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
   // left Eye
 
   ngl::Mat4 MV;
@@ -398,8 +392,8 @@ void NGLScene::paintGL()
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
 
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
   m_eyeMesh->draw();
 
   t.setPosition(1.276f,3.209f,2.271f);
@@ -408,21 +402,12 @@ void NGLScene::paintGL()
   MVP=m_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
-
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
   m_eyeMesh->draw();
-
-
-
-
-
   m_text->setColour(1.0f,1.0f,1.0f);
-  QString text=QString("Current Mesh %1 value %2").arg(m_meshNames[m_activeWeight].c_str()).arg(m_weights[m_activeWeight]);
-
-  m_text->renderText(10,18,text);
-  text=QString("Q-W change Pose Arrows to swap weights");
-  m_text->renderText(10,34,text);
+  m_text->renderText(10,700,fmt::format("Current Mesh {} value {}",m_meshNames[m_activeWeight],m_weights[m_activeWeight]));
+  m_text->renderText(10,680,"Q-W change Pose Arrows to swap weights");
 
 }
 
