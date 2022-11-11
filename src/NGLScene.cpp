@@ -7,6 +7,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
 #include <ngl/pystring.h>
+#include <iostream>
 
 NGLScene::NGLScene()
 {
